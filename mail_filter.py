@@ -280,7 +280,7 @@ def extract_body_text(msg, max_len=None):
                 if not payload:
                     continue
 
-                    charset = part.get_content_charset()
+                charset = part.get_content_charset()
                 text = safe_decode_payload(payload, charset)
 
                 if ctype == "text/plain":
@@ -415,32 +415,6 @@ def is_important(text: str) -> bool:
     return any(kw in t for kw in broad_keywords)
 
 
-def load_seen_uids(filename="seen_uids.json"):
-    if not os.path.exists(filename):
-        return {}
-    try:
-        with open(filename, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {}
-
-
-def save_seen_uids(data, filename="seen_uids.json"):
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-
-def load_history(filename="important_mails_history.json"):
-    if not os.path.exists(filename):
-        return []
-    try:
-        with open(filename, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return data if isinstance(data, list) else []
-    except Exception:
-        return []
-
-
 def save_xlsx_if_possible(rows, filename):
     try:
         from openpyxl import Workbook
@@ -500,14 +474,6 @@ def save_xlsx_if_possible(rows, filename):
         return False
 
 
-def append_log(rows, filename="important_mails_history.json"):
-    history = load_history(filename)
-    history.extend(rows)
-
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(history, f, ensure_ascii=False, indent=2)
-
-
 def fetch_message_safely(server, msg_num: int):
     try:
         resp, lines, octets = server.retr(msg_num)
@@ -549,7 +515,7 @@ def count_rows_by_bucket(rows):
     return today_count, last7_count, all_count
 
 
-def dedup_and_prepare_history(rows):
+def dedup_and_prepare_rows(rows):
     dedup = {}
     for row in rows:
         key = (
@@ -597,12 +563,14 @@ def dedup_and_prepare_history(rows):
     return history_rows
 
 
-def generate_html_report(rows, account_summary, report_time_str, html_filename, title, current_hit_count=0):
-    total_new = sum(x.get("new_mail_count", 0) for x in account_summary)
-    total_hit = sum(x.get("hit_count", 0) for x in account_summary)
-    total_skipped = sum(x.get("skipped_count", 0) for x in account_summary)
+def generate_html_report(rows, account_summary, report_time_str, html_filename, title):
+    hit_today_count, hit_last7_count, hit_all_count = count_rows_by_bucket(rows)
 
-    today_count, last7_count, all_count = count_rows_by_bucket(rows)
+    total_today_mail = sum(x.get("today_mail_count", 0) for x in account_summary)
+    total_last7_mail = sum(x.get("last7_mail_count", 0) for x in account_summary)
+    total_all_mail = sum(x.get("all_mail_count", 0) for x in account_summary)
+    total_skipped = sum(x.get("skipped_count", 0) for x in account_summary)
+    login_failed_count = sum(1 for x in account_summary if str(x.get("login_status", "")).startswith("失败"))
 
     category_order = [
         "店铺绩效类",
@@ -638,9 +606,12 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
         <tr>
             <td>{html.escape(item.get("account", ""))}</td>
             <td>{html.escape(item.get("user", ""))}</td>
-            <td>{item.get("new_mail_count", 0)}</td>
+            <td>{item.get("today_mail_count", 0)}</td>
+            <td>{item.get("last7_mail_count", 0)}</td>
+            <td>{item.get("all_mail_count", 0)}</td>
             <td>{item.get("hit_count", 0)}</td>
             <td>{item.get("skipped_count", 0)}</td>
+            <td>{html.escape(item.get("login_status", ""))}</td>
         </tr>
         """
 
@@ -955,15 +926,15 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
             <div class="top-title">{html.escape(title)}</div>
             <div class="top-desc">
                 生成时间：{html.escape(report_time_str)}<br>
-                这是后台版邮件风险报表。今日 / 最近7天 / 全部 读取历史累计命中邮件，本次新命中单独显示。
+                当前版本按邮件日期统计：今日 / 最近7天 / 全部，不再依赖“新邮件”标记。
             </div>
         </div>
 
         <div class="toolbar">
             <div class="tab-group">
-                <button class="tab-btn active" data-mode="today">今日（{today_count}）</button>
-                <button class="tab-btn" data-mode="last7">最近7天（{last7_count}）</button>
-                <button class="tab-btn" data-mode="all">全部（{all_count}）</button>
+                <button class="tab-btn active" data-mode="today">今日命中（{hit_today_count}）</button>
+                <button class="tab-btn" data-mode="last7">最近7天命中（{hit_last7_count}）</button>
+                <button class="tab-btn" data-mode="all">全部命中（{hit_all_count}）</button>
             </div>
             <div class="search-box">
                 <input id="searchInput" type="text" placeholder="搜索主题 / 发件人 / 命中词 / 邮箱">
@@ -972,32 +943,32 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
 
         <div class="summary-grid">
             <div class="summary-box">
-                <div class="summary-label">本次新命中</div>
-                <div class="summary-value">{current_hit_count}</div>
+                <div class="summary-label">今日邮件总数</div>
+                <div class="summary-value">{total_today_mail}</div>
             </div>
             <div class="summary-box">
-                <div class="summary-label">总新邮件</div>
-                <div class="summary-value">{total_new}</div>
+                <div class="summary-label">最近7天邮件总数</div>
+                <div class="summary-value">{total_last7_mail}</div>
             </div>
             <div class="summary-box">
-                <div class="summary-label">本次命中</div>
-                <div class="summary-value">{total_hit}</div>
-            </div>
-            <div class="summary-box">
-                <div class="summary-label">总跳过</div>
-                <div class="summary-value">{total_skipped}</div>
+                <div class="summary-label">全部邮件总数</div>
+                <div class="summary-value">{total_all_mail}</div>
             </div>
             <div class="summary-box">
                 <div class="summary-label">今日命中</div>
-                <div class="summary-value">{today_count}</div>
+                <div class="summary-value">{hit_today_count}</div>
             </div>
             <div class="summary-box">
                 <div class="summary-label">最近7天命中</div>
-                <div class="summary-value">{last7_count}</div>
+                <div class="summary-value">{hit_last7_count}</div>
             </div>
             <div class="summary-box">
                 <div class="summary-label">全部命中</div>
-                <div class="summary-value">{all_count}</div>
+                <div class="summary-value">{hit_all_count}</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">登录失败邮箱数</div>
+                <div class="summary-value">{login_failed_count}</div>
             </div>
         </div>
 
@@ -1045,7 +1016,9 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
                     <tr>
                         <th>账户名称</th>
                         <th>邮箱</th>
-                        <th>新邮件</th>
+                        <th>今日邮件</th>
+                        <th>最近7天邮件</th>
+                        <th>全部邮件</th>
                         <th>命中</th>
                         <th>跳过</th>
                         <th>登录状态</th>
@@ -1113,6 +1086,7 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
 def login_with_retry(host, user, password, retries=3, delay=4):
     last_error = None
     for attempt in range(1, retries + 1):
+        server = None
         try:
             print(f"尝试登录，第 {attempt}/{retries} 次：{user} @ {host}")
             server = poplib.POP3_SSL(host, 995, timeout=30)
@@ -1123,7 +1097,8 @@ def login_with_retry(host, user, password, retries=3, delay=4):
             last_error = e
             print(f"登录失败，第 {attempt} 次：{e}")
             try:
-                server.quit()
+                if server:
+                    server.quit()
             except Exception:
                 pass
             if attempt < retries:
@@ -1152,8 +1127,7 @@ def main():
     today_str = datetime.now().strftime("%Y-%m-%d")
     report_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    seen_uids = load_seen_uids("seen_uids.json")
-    new_important_rows = []
+    important_rows = []
     account_summary = []
 
     for acct in accounts:
@@ -1161,12 +1135,6 @@ def main():
         host = acct["host"]
         user = acct["user"]
         password = acct["password"]
-
-        account_key = user.lower().strip()
-        if account_key not in seen_uids:
-            seen_uids[account_key] = []
-
-        seen_uid_set = set(seen_uids[account_key])
 
         print("\n" + "=" * 60)
         print(f"检查邮箱：{name} ({user})")
@@ -1191,17 +1159,19 @@ def main():
                     uid = parts[1]
                     uid_map[msg_num] = uid
 
-            new_msg_nums = [
-                msg_num for msg_num, uid in uid_map.items()
-                if uid not in seen_uid_set
-            ]
+            # 按邮件序号倒序处理，新的在前
+            all_msg_nums = sorted(uid_map.keys(), key=lambda x: int(x), reverse=True)
 
-            print(f"发现新邮件 {len(new_msg_nums)} 封")
+            print(f"邮箱当前可读取邮件 {len(all_msg_nums)} 封")
 
             found_count = 0
             skipped_count = 0
 
-            for msg_num in new_msg_nums:
+            today_mail_count = 0
+            last7_mail_count = 0
+            all_mail_count = 0
+
+            for msg_num in all_msg_nums:
                 uid = uid_map[msg_num]
 
                 try:
@@ -1209,22 +1179,23 @@ def main():
                     msg = email.message_from_bytes(raw)
 
                     subject, from_, date_ = get_text_headers(msg)
+                    date_bucket = get_date_bucket(date_)
+
+                    all_mail_count += 1
+                    if date_bucket == "today":
+                        today_mail_count += 1
+                    if date_bucket in ("today", "last7"):
+                        last7_mail_count += 1
+
                     body_full = extract_body_text(msg, max_len=20000)
                     body_preview = (body_full or "")[:1200]
 
                     haystack = f"{subject}\n{from_}\n{date_}\n{body_full}"
 
-                    print(f"邮件主题：{subject[:120]}")
-                    print(f"发件人：{from_[:120]}")
-                    print(f"日期：{date_[:120]}")
-                    print("-" * 60)
-
-                    seen_uid_set.add(uid)
-
                     if is_important(haystack):
                         row = {
                             "category": classify_mail(haystack),
-                            "time_bucket": get_date_bucket(date_),
+                            "time_bucket": date_bucket,
                             "account": name,
                             "account_user": user,
                             "date": date_,
@@ -1238,28 +1209,26 @@ def main():
                             "fetch_mode": fetch_mode,
                             "_sort_dt": format_datetime_for_sort(date_)
                         }
-                        new_important_rows.append(row)
+                        important_rows.append(row)
                         found_count += 1
-
-                        print(f"\n命中重要邮件：{subject[:100]}")
-                        print(f"发件人：{from_}")
-                        print(f"日期：{date_}")
-                        print(f"时间分组：{row['time_bucket']}")
-                        print(f"抓取方式：{fetch_mode}")
-                        print(f"命中词：{row['hit_keywords']}")
-                        print("-" * 60)
 
                 except Exception as e:
                     skipped_count += 1
                     print(f"跳过邮件 {msg_num}，原因：{e}")
 
-            seen_uids[account_key] = sorted(list(seen_uid_set))
-            print(f"[{name}] 新命中重要邮件 {found_count} 封，跳过 {skipped_count} 封")
+            print(
+                f"[{name}] 今日邮件 {today_mail_count} 封，"
+                f"最近7天邮件 {last7_mail_count} 封，"
+                f"全部邮件 {all_mail_count} 封，"
+                f"命中 {found_count} 封，跳过 {skipped_count} 封"
+            )
 
             account_summary.append({
                 "account": name,
                 "user": user,
-                "new_mail_count": len(new_msg_nums),
+                "today_mail_count": today_mail_count,
+                "last7_mail_count": last7_mail_count,
+                "all_mail_count": all_mail_count,
                 "hit_count": found_count,
                 "skipped_count": skipped_count,
                 "login_status": "成功",
@@ -1270,7 +1239,9 @@ def main():
             account_summary.append({
                 "account": name,
                 "user": user,
-                "new_mail_count": 0,
+                "today_mail_count": 0,
+                "last7_mail_count": 0,
+                "all_mail_count": 0,
                 "hit_count": 0,
                 "skipped_count": 0,
                 "login_status": f"失败：{e}",
@@ -1283,67 +1254,42 @@ def main():
                 except Exception:
                     pass
 
-            save_seen_uids(seen_uids, "seen_uids.json")
             print("等待 3 秒，准备检查下一个邮箱...")
             time.sleep(3)
 
-    dedup = {}
-    for row in new_important_rows:
-        key = (row["account"], row["subject"], row["date"], row["uid"])
-        dedup[key] = row
-    final_rows = list(dedup.values())
-
-    category_rank = {
-        "店铺绩效类": 1,
-        "KYC审核类": 2,
-        "付款/资金类": 3,
-        "产品链接/合规类": 4,
-        "法务/侵权类": 5,
-        "货件/库存类": 6,
-        "其他风险类": 7,
-    }
-    bucket_rank = {
-        "today": 1,
-        "last7": 2,
-        "older": 3,
-        "unknown": 4,
-    }
-
-    final_rows.sort(
-        key=lambda x: (
-            bucket_rank.get(x.get("time_bucket", "unknown"), 99),
-            category_rank.get(x["category"], 99),
-            -x.get("_sort_dt", datetime.min).timestamp()
-            if x.get("_sort_dt") and x.get("_sort_dt") != datetime.min else 0
-        )
-    )
-
-    for row in final_rows:
-        row.pop("_sort_dt", None)
+    final_rows = dedup_and_prepare_rows(important_rows)
 
     print("\n" + "=" * 60)
     print("所有邮箱检测汇总")
     print("=" * 60)
 
-    total_new = 0
+    total_today_mail = 0
+    total_last7_mail = 0
+    total_all_mail = 0
     total_hit = 0
     total_skipped = 0
 
     for item in account_summary:
-        total_new += item["new_mail_count"]
+        total_today_mail += item["today_mail_count"]
+        total_last7_mail += item["last7_mail_count"]
+        total_all_mail += item["all_mail_count"]
         total_hit += item["hit_count"]
         total_skipped += item["skipped_count"]
         print(
             f'{item["account"]} ({item["user"]})：'
-            f'新邮件 {item["new_mail_count"]} 封，'
+            f'今日邮件 {item["today_mail_count"]} 封，'
+            f'最近7天邮件 {item["last7_mail_count"]} 封，'
+            f'全部邮件 {item["all_mail_count"]} 封，'
             f'命中 {item["hit_count"]} 封，'
             f'跳过 {item["skipped_count"]} 封，'
             f'登录状态：{item.get("login_status", "")}'
         )
 
     print("-" * 60)
-    print(f"总新邮件：{total_new} 封")
-    print(f"总命中：{total_hit} 封")
+    print(f"今日邮件总数：{total_today_mail} 封")
+    print(f"最近7天邮件总数：{total_last7_mail} 封")
+    print(f"全部邮件总数：{total_all_mail} 封")
+    print(f"全部命中：{total_hit} 封")
     print(f"总跳过：{total_skipped} 封")
 
     html_name = f"important_mails_{today_str}.html"
@@ -1382,24 +1328,17 @@ def main():
 
     xlsx_ok = save_xlsx_if_possible(final_rows, xlsx_name)
 
-    if final_rows:
-        append_log(final_rows, "important_mails_history.json")
-
-    history_rows = load_history("important_mails_history.json")
-    history_rows = dedup_and_prepare_history(history_rows)
-
     generate_html_report(
-        rows=history_rows,
+        rows=final_rows,
         account_summary=account_summary,
         report_time_str=report_time_str,
         html_filename=html_name,
         title=f"风险邮件后台报告 - {today_str}",
-        current_hit_count=len(final_rows)
     )
 
     print("-" * 60)
     if final_rows:
-        print(f"发现新的风险邮件 {len(final_rows)} 封")
+        print(f"本次扫描命中风险邮件 {len(final_rows)} 封")
     else:
         print("本次没有命中风险邮件")
     print(f"已生成：{csv_name}")
@@ -1412,7 +1351,7 @@ def main():
 
     print("=" * 60)
 
-    src = f"important_mails_{today_str}.html"
+    src = html_name
     dst = "index.html"
 
     if os.path.exists(src):
