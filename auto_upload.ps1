@@ -18,7 +18,7 @@ try {
         $pythonCmd = "python"
     }
     else {
-        throw "Python not found. Please install Python and add to PATH."
+        throw "Python not found. Please install Python and add it to PATH."
     }
 
     Write-Host "Using Python: $pythonCmd"
@@ -26,29 +26,44 @@ try {
 
     if ($pythonCmd -eq "py") {
         & py $pythonScript
-    } else {
+    }
+    else {
         & python $pythonScript
     }
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Python script failed, code: $LASTEXITCODE"
+        throw "Python script failed, exit code: $LASTEXITCODE"
     }
 
     Write-Host "Python done"
+    Write-Host "Running git upload"
 
-    if (Get-Command git -ErrorAction SilentlyContinue) {
-        Write-Host "Running git upload"
+    & git config --global http.version HTTP/1.1
+    & git config --global http.postBuffer 524288000
 
-        & git add .
-        & git commit -m "auto update"
-        & git push
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        throw "Git not found. Please install Git and add it to PATH."
+    }
 
-        Write-Host "Git done"
+    & git add .
+
+    & git diff --cached --quiet
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "No changes to commit"
     }
     else {
-        throw "Git not found"
+        & git commit -m "auto update"
+        if ($LASTEXITCODE -ne 0) {
+            throw "git commit failed, exit code: $LASTEXITCODE"
+        }
     }
 
+    & git push origin main
+    if ($LASTEXITCODE -ne 0) {
+        throw "git push failed, exit code: $LASTEXITCODE"
+    }
+
+    Write-Host "Git done"
     Write-Host "All done"
 }
 catch {
