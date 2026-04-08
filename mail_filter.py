@@ -376,6 +376,17 @@ def parse_email_date(date_str):
         return None
 
 
+def format_email_date_cn(date_str):
+    dt = parse_email_date(date_str)
+    if not dt:
+        return date_str
+
+    # 转北京时间（+8小时）
+    dt = dt + timedelta(hours=8)
+
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
 def get_date_bucket(date_str):
     dt = parse_email_date(date_str)
     if not dt:
@@ -681,7 +692,8 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
                 anchor = build_mail_anchor(row, idx)
                 subject = html.escape(row.get("subject", ""))
                 from_ = html.escape(row.get("from", ""))
-                date_ = html.escape(row.get("date", ""))
+                date_raw = row.get("date", "")
+                date_ = html.escape(format_email_date_cn(date_raw))
                 account = html.escape(row.get("account", ""))
                 hits = html.escape(row.get("hit_keywords", ""))
                 preview = html.escape(row.get("body_preview", ""))
