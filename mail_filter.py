@@ -218,21 +218,36 @@ def get_text_headers(msg):
     return subject, from_, date_
 
 
-def html_to_text(html_text: str) -> str:
-    html_text = re.sub(r"<script[\s\S]*?</script>", "", html_text, flags=re.I)
-    html_text = re.sub(r"<style[\s\S]*?</style>", "", html_text, flags=re.I)
-    html_text = re.sub(r"<br\s*/?>", "\n", html_text, flags=re.I)
-    html_text = re.sub(r"</p\s*>", "\n", html_text, flags=re.I)
-    html_text = re.sub(r"</div\s*>", "\n", html_text, flags=re.I)
-    html_text = re.sub(r"<li\s*>", "\n- ", html_text, flags=re.I)
-    html_text = re.sub(r"<[^>]+>", " ", html_text)
-    html_text = re.sub(r"&nbsp;", " ", html_text, flags=re.I)
-    html_text = re.sub(r"&amp;", "&", html_text, flags=re.I)
-    html_text = re.sub(r"&lt;", "<", html_text, flags=re.I)
-    html_text = re.sub(r"&gt;", ">", html_text, flags=re.I)
-    html_text = re.sub(r"\n\s*\n+", "\n\n", html_text)
-    html_text = re.sub(r"[ \t]+", " ", html_text)
-    return html_text.strip()
+def html_to_text_keep_tables(html_text: str) -> str:
+    if not html_text:
+        return ""
+
+    text = html_text
+
+    text = re.sub(r"(?is)<script[\s\S]*?</script>", "", text)
+    text = re.sub(r"(?is)<style[\s\S]*?</style>", "", text)
+
+    text = re.sub(r"(?i)<br\s*/?>", "\n", text)
+    text = re.sub(r"(?i)</p\s*>", "\n", text)
+    text = re.sub(r"(?i)</div\s*>", "\n", text)
+    text = re.sub(r"(?i)</li\s*>", "\n", text)
+    text = re.sub(r"(?i)<li\s*>", "- ", text)
+
+    # 表格结构保留一些间距
+    text = re.sub(r"(?i)</tr\s*>", "\n", text)
+    text = re.sub(r"(?i)</td\s*>", "    ", text)
+    text = re.sub(r"(?i)</th\s*>", "    ", text)
+
+    text = re.sub(r"<[^>]+>", " ", text)
+
+    text = html.unescape(text)
+    text = re.sub(r"\r", "", text)
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    text = re.sub(r"\n[ \t]+", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = re.sub(r"[ \t]{2,}", " ", text)
+
+    return text.strip()
 
 
 def safe_decode_payload(payload, charset):
@@ -260,9 +275,33 @@ def safe_decode_payload(payload, charset):
     return payload.decode("utf-8", errors="replace")
 
 
-def extract_body_text(msg, max_len=None):
+def sanitize_html_for_display(raw_html: str) -> str:
+    if not raw_html:
+        return ""
+
+    cleaned = raw_html
+
+    # 去掉危险内容
+    cleaned = re.sub(r"(?is)<script[\s\S]*?</script>", "", cleaned)
+    cleaned = re.sub(r"(?is)<style[\s\S]*?</style>", "", cleaned)
+    cleaned = re.sub(r"(?is)<iframe[\s\S]*?</iframe>", "", cleaned)
+    cleaned = re.sub(r"(?is)<object[\s\S]*?</object>", "", cleaned)
+    cleaned = re.sub(r"(?is)<embed[\s\S]*?</embed>", "", cleaned)
+    cleaned = re.sub(r"(?is)<form[\s\S]*?</form>", "", cleaned)
+
+    # 去掉 onload / onclick 等事件
+    cleaned = re.sub(r'\son\w+="[^"]*"', "", cleaned, flags=re.I)
+    cleaned = re.sub(r"\son\w+='[^']*'", "", cleaned, flags=re.I)
+
+    # 屏蔽 javascript: 协议
+    cleaned = re.sub(r'javascript:', "", cleaned, flags=re.I)
+
+    return cleaned.strip()
+
+
+def extract_body_content(msg, max_len=None):
     plain_parts = []
-    html_parts = []
+    html_parts_raw = []
 
     try:
         if msg.is_multipart():
@@ -286,7 +325,7 @@ def extract_body_text(msg, max_len=None):
                 if ctype == "text/plain":
                     plain_parts.append(text)
                 elif ctype == "text/html":
-                    html_parts.append(html_to_text(text))
+                    html_parts_raw.append(text)
         else:
             payload = msg.get_payload(decode=True)
             if payload:
@@ -294,23 +333,35 @@ def extract_body_text(msg, max_len=None):
                 text = safe_decode_payload(payload, charset)
 
                 if msg.get_content_type() == "text/html":
-                    html_parts.append(html_to_text(text))
+                    html_parts_raw.append(text)
                 else:
                     plain_parts.append(text)
 
     except Exception:
         pass
 
-    text = "\n".join(plain_parts).strip()
-    if not text:
-        text = "\n".join(html_parts).strip()
+    plain_text = "\n".join(plain_parts).strip()
+    html_raw = "\n".join(html_parts_raw).strip()
+    html_text = html_to_text_keep_tables(html_raw) if html_raw else ""
 
-    text = re.sub(r"\s+\n", "\n", text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
+    # 预览优先使用更完整的内容
+    if len(html_text.strip()) > len(plain_text.strip()):
+        merged_text = html_text
+    else:
+        merged_text = plain_text or html_text
+
+    merged_text = re.sub(r"\s+\n", "\n", merged_text)
+    merged_text = re.sub(r"\n{3,}", "\n\n", merged_text)
 
     if max_len:
-        return text[:max_len]
-    return text
+        merged_text = merged_text[:max_len]
+
+    return {
+        "plain_text": plain_text,
+        "html_raw": html_raw,
+        "html_display": sanitize_html_for_display(html_raw),
+        "merged_text": merged_text,
+    }
 
 
 def parse_email_date(date_str):
@@ -637,6 +688,7 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
                 fetch_mode = html.escape(row.get("fetch_mode", ""))
                 detected_at = html.escape(row.get("detected_at", ""))
                 time_bucket = html.escape(row.get("time_bucket", ""))
+                html_body = row.get("html_body", "") or ""
 
                 cards_html += f"""
                 <div class="mail-card searchable-card" data-search="{(subject + ' ' + from_ + ' ' + hits + ' ' + account).lower()}">
@@ -650,12 +702,24 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
                         <span><b>抓取方式：</b>{fetch_mode}</span>
                         <span><b>检测时间：</b>{detected_at}</span>
                     </div>
+
                     <details>
                         <summary>展开查看邮件预览</summary>
                         <pre>{preview}</pre>
                     </details>
-                </div>
                 """
+
+                if html_body.strip():
+                    cards_html += f"""
+                    <details class="html-details">
+                        <summary>展开查看原始表格内容</summary>
+                        <div class="raw-html-box">
+                            {html_body}
+                        </div>
+                    </details>
+                    """
+
+                cards_html += "</div>"
 
             category_sections_html += f"""
             <div class="category-block time-panel" data-mode="{mode}">
@@ -876,6 +940,7 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             padding: 10px 12px;
+            margin-top: 10px;
         }}
         summary {{
             cursor: pointer;
@@ -888,6 +953,34 @@ def generate_html_report(rows, account_summary, report_time_str, html_filename, 
             font-family: Arial, "Microsoft YaHei", sans-serif;
             font-size: 13px;
             line-height: 1.65;
+        }}
+        .raw-html-box {{
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 12px;
+            margin-top: 10px;
+            overflow-x: auto;
+            max-width: 100%;
+        }}
+        .raw-html-box table {{
+            border-collapse: collapse;
+            width: auto;
+            min-width: 600px;
+            max-width: none;
+        }}
+        .raw-html-box th,
+        .raw-html-box td {{
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+            font-size: 13px;
+            line-height: 1.5;
+            word-break: break-word;
+        }}
+        .raw-html-box img {{
+            max-width: 100%;
+            height: auto;
         }}
         .empty-box {{
             background: #fff;
@@ -1187,8 +1280,10 @@ def main():
                     if date_bucket in ("today", "last7"):
                         last7_mail_count += 1
 
-                    body_full = extract_body_text(msg, max_len=20000)
+                    body_data = extract_body_content(msg, max_len=20000)
+                    body_full = body_data.get("merged_text", "")
                     body_preview = (body_full or "")[:1200]
+                    html_body = body_data.get("html_display", "")
 
                     haystack = f"{subject}\n{from_}\n{date_}\n{body_full}"
 
@@ -1204,6 +1299,7 @@ def main():
                             "hit_keywords": get_hit_keywords(haystack),
                             "body_preview": body_preview,
                             "body_full": body_full,
+                            "html_body": html_body,
                             "uid": uid,
                             "detected_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             "fetch_mode": fetch_mode,
