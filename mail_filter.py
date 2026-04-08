@@ -190,7 +190,7 @@ def load_accounts_from_env():
             continue
 
         accounts.append({
-            "name": f"account_{i}",
+            "name": os.getenv(f"NAME_{i}", f"account_{i}"),
             "host": host,
             "user": email_addr,
             "password": password,
