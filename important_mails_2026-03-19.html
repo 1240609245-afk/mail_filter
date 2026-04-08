@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>风险邮件后台报告 - 2026-03-19</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            background: #f5f7fb;
+            color: #222;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+        }
+        .container {
+            width: 96%;
+            max-width: 1500px;
+            margin: 20px auto;
+        }
+        .top-bar {
+            background: linear-gradient(135deg, #1f3a8a, #2563eb);
+            color: #fff;
+            padding: 18px 22px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.18);
+        }
+        .top-title {
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        .top-desc {
+            font-size: 14px;
+            line-height: 1.8;
+            opacity: .95;
+        }
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .tab-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tab-btn {
+            border: 1px solid #cbd5e1;
+            background: #fff;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .tab-btn.active {
+            background: #2563eb;
+            color: #fff;
+            border-color: #2563eb;
+        }
+        .search-box {
+            min-width: 260px;
+            flex: 1;
+            max-width: 420px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .summary-box {
+            background: #fff;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+        }
+        .summary-label {
+            color: #667085;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .summary-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+        .panel {
+            background: #fff;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+        }
+        .panel-title {
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px 16px;
+            border-bottom: 1px solid #ebeef5;
+            background: #f8fafc;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ebeef5;
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 14px;
+            vertical-align: top;
+            word-break: break-word;
+        }
+        th {
+            background: #f8fafc;
+            font-weight: bold;
+        }
+        .category-block {
+            background: #fff;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.04);
+        }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            border-bottom: 1px solid #ebeef5;
+            padding: 12px 16px;
+        }
+        .category-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .category-count {
+            color: #64748b;
+            font-size: 14px;
+        }
+        .category-details > summary {
+            cursor: pointer;
+            padding: 12px 16px;
+            background: #fff;
+            font-weight: bold;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .category-body {
+            padding: 14px;
+        }
+        .mail-card {
+            border: 1px solid #e2e8f0;
+            background: #fcfcfd;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+        }
+        .mail-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .mail-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 18px;
+            font-size: 13px;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+        details {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 10px 0 0 0;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            font-size: 13px;
+            line-height: 1.65;
+        }
+        .empty-box {
+            background: #fff;
+            border: 1px solid #dbe2ea;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            color: #64748b;
+        }
+        .hidden {
+            display: none !important;
+        }
+        @media (max-width: 1200px) {
+            .summary-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        @media (max-width: 900px) {
+            .mail-meta {
+                grid-template-columns: 1fr;
+            }
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 600px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <div class="top-title">风险邮件后台报告 - 2026-03-19</div>
+            <div class="top-desc">
+                生成时间：2026-03-19 18:39:42<br>
+                这是后台版邮件风险报表。今日 / 最近7天 / 全部 读取历史累计命中邮件，本次新命中单独显示。
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="tab-group">
+                <button class="tab-btn active" data-mode="today">今日（14）</button>
+                <button class="tab-btn" data-mode="last7">最近7天（14）</button>
+                <button class="tab-btn" data-mode="all">全部（14）</button>
+            </div>
+            <div class="search-box">
+                <input id="searchInput" type="text" placeholder="搜索主题 / 发件人 / 命中词 / 邮箱">
+            </div>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-box">
+                <div class="summary-label">本次新命中</div>
+                <div class="summary-value">0</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">总新邮件</div>
+                <div class="summary-value">1</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">本次命中</div>
+                <div class="summary-value">0</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">总跳过</div>
+                <div class="summary-value">0</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">今日命中</div>
+                <div class="summary-value">14</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">最近7天命中</div>
+                <div class="summary-value">14</div>
+            </div>
+            <div class="summary-box">
+                <div class="summary-label">全部命中</div>
+                <div class="summary-value">14</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">分类汇总</div>
+
+            <div class="time-panel" data-mode="today">
+                <table>
+                    <thead>
+                        <tr><th>分类</th><th>命中数量</th></tr>
+                    </thead>
+                    <tbody>
+                        
+            <tr>
+                <td>店铺绩效类</td>
+                <td>0</td>
+            </tr>
+            
+            <tr>
+                <td>KYC审核类</td>
+                <td>0</td>
+            </tr>
+            
+            <tr>
+                <td>付款/资金类</td>
+                <td>0</td>
+            </tr>
+            
+            <tr>
+                <td>产品链接/合规类</td>
+                <td>5</td>
+            </tr>
+            
+            <tr>
+                <td>法务/侵权类</td>
+                <td>8</td>
+            </tr>
+            
+            <tr>
+                <td>货件/库存类</td>
+                <td>1</td>
+            </tr>
+            
+            <tr>
+                <td>其他风险类</td>
+                <td>0</td>
+            </tr>
+            
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="time-panel hidden" data-mode="last7">
+                <table>
+                    <thead>
+                        <tr><th>分类</th><th>命中数量</th></tr>
+                    </thead>
+                    <tbody>
+                        
+            <tr>
+                <td>店铺绩效类</td>
+                <td>0</td>
+            </tr>
+            
+            <tr>
+                <td>KYC审核类</td>
+                <td>0</td>
+            </tr>
+            
+            <tr>
+                <td>付款/资金类</td>
+                <td>0</td>
+            </tr>
+            
+            <tr>
+                <td>产品链接/合规类</td>
+                <td>5</td>
+            </tr>
+            
+            <tr>
+                <td>法务/侵权类</td>
+                <td>8</td>
+            </tr>
+            
+            <tr>
+                <td>货件/库存类</td>
+                <td>1</td>
+            </tr>
+            
+            <tr>
+                <td>其他风险类</td>
+                <td>0</td>
+            </tr>
+            
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="time-panel hidden" data-mode="all">
+                <table>
+                    <thead>
+                        <tr><th>分类</th><th>命中数量</th></tr>
+                    </thead>
+                    <tbody>
+                        
+            <tr>
+                <td>店铺绩效类</td>
+                <td>0</td>
+            </tr>
+            
+            <tr>
+                <td>KYC审核类</td>
+                <td>0</td>
+            </tr>
+            
+            <tr>
+                <td>付款/资金类</td>
+                <td>0</td>
+            </tr>
+            
+            <tr>
+                <td>产品链接/合规类</td>
+                <td>5</td>
+            </tr>
+            
+            <tr>
+                <td>法务/侵权类</td>
+                <td>8</td>
+            </tr>
+            
+            <tr>
+                <td>货件/库存类</td>
+                <td>1</td>
+            </tr>
+            
+            <tr>
+                <td>其他风险类</td>
+                <td>0</td>
+            </tr>
+            
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">邮箱汇总（本次运行）</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>账户名称</th>
+                        <th>邮箱</th>
+                        <th>新邮件</th>
+                        <th>命中</th>
+                        <th>跳过</th>
+                        <th>登录状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+        <tr>
+            <td>account_1</td>
+            <td>zeruinnkang01@126.com</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>account_4</td>
+            <td>weihaizhongxin2024@126.com</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>account_2</td>
+            <td>yihangeu163@163.com</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>account_5</td>
+            <td>xiangyuexingeu@yeah.net</td>
+            <td>1</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+        <tr>
+            <td>account_3</td>
+            <td>bailianeu@163.com</td>
+            <td>0</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        
+                </tbody>
+            </table>
+        </div>
+
+        
+            <div class="category-block time-panel" data-mode="today">
+                <div class="category-header">
+                    <div class="category-name">产品链接/合规类</div>
+                    <div class="category-count">共 5 封</div>
+                </div>
+                <details class="category-details">
+                    <summary>展开/收起</summary>
+                    <div class="category-body">
+                        
+                <div class="mail-card searchable-card" data-search="seller: a3tg87v6zg3wix, asin: b0ff1qpd5b, marketplace: 6 - ps - doc
+ review &quot;pa-child-safety@amazon.co.jp&quot; &lt;pa-child-safety@amazon.co.jp&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbC7QJ9O2m7sCLAAwAA3q_1">SELLER: A3TG87V6ZG3WIX, ASIN: B0FF1QPD5B, MARKETPLACE: 6 - PS - DOC
+ REVIEW</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>&quot;pa-child-safety@amazon.co.jp&quot; &lt;pa-child-safety@amazon.co.jp&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 08:13:19 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>ご担当者様
+平素はAmazon.co.jp をご利用いただき、ありがとうございます。
+お問い合わせいただいた商品は当審査の対象外のため、販売継続とさせていただいております。特に追加の対応は必要ございません。
+なお今後審査の対象になります場合には、別途ご連絡いたします。
+Amazonでは販売パートナーの皆様とのコミュニケーションの質を向上させるため、1分ほどのアンケートへの協力をお願いしています。ぜひご回答をお願いいたします。
+https://amazonexteu.qualtrics.com/jfe/form/SV_e2Pw4eFXjFviYfA?pm=UPSC&amp;case=3263444313
+引き続き弊社の製品安全プログラムへご協力をお願い申し上げます。
+To help us continually improve, we ask that you take a moment to complete our survey below. This would help us understand your overall compliance experience.
+Were you satisfied with the support provided?
+If yes, please click here:
+http://www.amazon.co.jp/gp/help/survey?p=A1MSA39KTZYOP3&amp;k=hy
+If no, please click here:
+http://www.amazon.co.jp/gp/help/survey?p=A1MSA39KTZYOP3&amp;k=hn</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12228008522] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持 &quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIBBBK2m7j1DrswAA3P_2">RE:[CASE 12228008522] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>&quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:53:17 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:24</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>亲爱的卖家，
+这是关于我们爱尔兰条款与条件重要更新的重要通知。
+重要更正： 我们之前曾告知任何税务顾问都可用于爱尔兰增值税注册。这是一个错误。根据我们条款与条件的更新，现在只有以下税务顾问被接受用于爱尔兰增值税报销计划：
+•AVASK
+•J&amp;P Accountants
+•Taxually
+•Expandly
+•EURep
+•EVatmaster
+•VATAi
+•Amber
+如需了解更多信息，请阅读条款与条件：m.media-amazon.com/images/G/01/EU_COMPLIANCE_TEAM/IE_VAT_Terms_and_Conditions.pdf
+添加您的税务信息
+如需添加税务信息，请访问税务设置：sellercentral.amazon.com/tax/consolidatedRegistrations
+**为什么需要增值税注册？**
+欧盟税法要求使用FBA的卖家在库存存储的国家/地区注册增值税。亚马逊验证税务信息以遵守税务机关要求，并确保增值税准确应用于您的销售。
+了解更多关于欧洲增值税注册要求的信息：sellercentral.amazon.com/help/hub/reference/GTQ23HPXBQK563WS
+如有疑问，请通过您的案例日志联系我们：sellercentral.amazon.com/cu/case-lobby?ref_=xx_case_dnav_xx
+如有疑问，请扫码加入亚马逊卖家合规群：
+https://m.media-amazon.com/images/G/01/CN_Compliance_Team/mass_wecom_jm.jpg
+Amazon Global Selling Seller Compliance Team</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12227975792] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持 &quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbCxQQ_2m7j0RocQAA3E_3">RE:[CASE 12227975792] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>&quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:53:05 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:22</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>亲爱的卖家，
+这是关于我们爱尔兰条款与条件重要更新的重要通知。
+重要更正： 我们之前曾告知任何税务顾问都可用于爱尔兰增值税注册。这是一个错误。根据我们条款与条件的更新，现在只有以下税务顾问被接受用于爱尔兰增值税报销计划：
+•AVASK
+•J&amp;P Accountants
+•Taxually
+•Expandly
+•EURep
+•EVatmaster
+•VATAi
+•Amber
+如需了解更多信息，请阅读条款与条件：m.media-amazon.com/images/G/01/EU_COMPLIANCE_TEAM/IE_VAT_Terms_and_Conditions.pdf
+添加您的税务信息
+如需添加税务信息，请访问税务设置：sellercentral.amazon.com/tax/consolidatedRegistrations
+**为什么需要增值税注册？**
+欧盟税法要求使用FBA的卖家在库存存储的国家/地区注册增值税。亚马逊验证税务信息以遵守税务机关要求，并确保增值税准确应用于您的销售。
+了解更多关于欧洲增值税注册要求的信息：sellercentral.amazon.com/help/hub/reference/GTQ23HPXBQK563WS
+如有疑问，请通过您的案例日志联系我们：sellercentral.amazon.com/cu/case-lobby?ref_=xx_case_dnav_xx
+如有疑问，请扫码加入亚马逊卖家合规群：
+https://m.media-amazon.com/images/G/01/CN_Compliance_Team/mass_wecom_yt.jpg
+Amazon Global Selling Seller Compliance Team</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12234298032] ae - restricted products - appeal - asin:
+ b0f74j7n8d &quot;pars-rp-core-sellerappeals@amazon.ae&quot; &lt;pars-rp-core-sellerappeals@amazon.ae&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiOREI8Wm7inEw0AAA3Y_4">RE:[CASE 12234298032] AE - Restricted Products - Appeal - ASIN:
+ B0F74J7N8D</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>&quot;pars-rp-core-sellerappeals@amazon.ae&quot; &lt;pars-rp-core-sellerappeals@amazon.ae&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:32:26 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:24</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Hello,
+We received your submission and after careful review we have determined that your ASINs do not meet the criteria for reinstatement.
+Why did this happen?
+Your listings do not meet our standards. Refer to the following details:
+ASIN: B0F74J7N8D
+Title:مكعبات مغناطيسية 150 قطعة 2 سم، ألعاب مونتيسوري مغناطيسية للأطفال، عالم البناء المغناطيسي هدية عيد ميلاد من 3 4 5 6 7 8 9 10 11 12 أولاد بنات
+This product has been identified as containing aggregate masses of small and powerful individual rare earth magnets. Due to a product recall of the rapid alert system of the EU (RAPEX), Amazon policy prohibits the sale and listing of these types of products.
+Thank you for flagging asins (B0FB9MPZMZ,B0FBGHLBCK,B0DQ56DF7Q,B0CN95SQ6J), we have reach out to concern department to handle.
+You can access the previous communication sent to you in regards to this matter via the &quot;Performance notifications&quot; page in the &quot;Performance&quot; section of Seller Central:
+https://sellercentral.amazon.ae/performance/notifications
+We’re here to help
+For information on our policies, you can go to the following pages:
+-- &quot;Restricted products&quot;:
+https://sellercentral.amazon.ae/gp/help/201743940?referral=A1TVXVCFZDLUHK_A2</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12234263722] sa - restricted products - appeal - asin:
+ b0gcjy4d3n &quot;pars-rp-core-sellerappeals@amazon.sa&quot; &lt;pars-rp-core-sellerappeals@amazon.sa&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIAlFL2m7h2nRhgAA3o_5">RE:[CASE 12234263722] SA - Restricted Products - Appeal - ASIN:
+ B0GCJY4D3N</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>&quot;pars-rp-core-sellerappeals@amazon.sa&quot; &lt;pars-rp-core-sellerappeals@amazon.sa&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:19:31 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 13:24:41</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Hello,
+We received your submission and after careful review we have determined that your ASINs do not meet the criteria for reinstatement.
+Why did this happen?
+Your listings do not meet our standards. Refer to the following details:
+ASIN: B0GCJY4D3N
+Title: Crifeton Magnetic Building Blocks 220
+This product has been identified as containing aggregate masses of small and powerful individual rare earth magnets. Due to a product recall of the rapid alert system of the EU (RAPEX), Amazon policy prohibits the sale and listing of these types of products.
+Thank you for flagging asins (B0FB9MPZMZ,B0FBGHLBCK,B0DQ56DF7Q,B0CN95SQ6J), we have reach out to concern department to handle.
+You can access the previous communication sent to you in regards to this matter via the &quot;Performance notifications&quot; page in the &quot;Performance&quot; section of Seller Central:
+https://sellercentral.amazon.sa/performance/notifications
+We’re here to help
+For information on our policies, you can go to the following pages:
+-- &quot;Restricted products&quot;:
+https://sellercentral.amazon.sa/gp/help/201743940?referral=A262YZ69IPGLKF_A2G9FIS6VFDCLW&amp;referral=A3Q9SELOQ79HDN_A2G9FIS6VFDCLW
+-- &quot;Restricted Products FAQ&quot;:
+https://sellercentral</pre>
+                    </details>
+                </div>
+                
+                    </div>
+                </details>
+            </div>
+            
+            <div class="category-block time-panel" data-mode="today">
+                <div class="category-header">
+                    <div class="category-name">法务/侵权类</div>
+                    <div class="category-count">共 8 封</div>
+                </div>
+                <details class="category-details">
+                    <summary>展开/收起</summary>
+                    <div class="category-body">
+                        
+                <div class="mail-card searchable-card" data-search="act today &amp; improve sales on excess inventory the fulfillment by amazon team &lt;donotreply@amazon.com&gt;  account_4">
+                    <div class="mail-title" id="mail___account_4_xtbBsgZGLGm7zybj7wAA3p_1">Act today &amp; improve Sales on Excess Inventory</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_4</span>
+                        <span><b>发件人：</b>The Fulfillment by Amazon team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 10:25:38 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:28:14</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+This title will display on mobile devices
+ Optional preview text
+ Hello,
+We noticed you have a number of ASIN(s) that have excess levels of inventory. We are reaching out to inform you about multiple options to improve your Unit Sales on your aged and/or excess inventory in Amazon Fulfillment Centers. Our goal is to help you increase the sales on this excess inventory:
+X004QEYPRL, X004QFJQLF, X004MMFUYT, X004QEVV05, X004K6ILMZ
+We encourage you to take Amazon recommended actions such as Create Outlet deals, Sponsor Products Ad, to improve sell through of this excess inventory and potentially reduce your chances of incurring aged inventory fee.
+ Outlet deals
+ Amazon Outlet is a great place for customers to shop for overstock deals, which offers a selection of items, such as electronics, toys, beauty, and kitchen.
+ Create Outlet Deal Today!
+ Sponsored Product Ads
+ Sponsored Products is a cost-per-click advertising solution that provides advertisers with a foundation of controls and visibility to help get their individual products discovered, and help generate sales from traffic sources in the Amazon store and on select premium apps and websites.
+ Create Sponsored Products Ad Today!</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="act today &amp; improve sales on excess inventory the fulfillment by amazon team &lt;donotreply@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbCxQku62m7ysk_JwAA3B_2">Act today &amp; improve Sales on Excess Inventory</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>The Fulfillment by Amazon team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 10:07:03 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+This title will display on mobile devices
+ Optional preview text
+ Hello,
+We noticed you have a number of ASIN(s) that have excess levels of inventory. We are reaching out to inform you about multiple options to improve your Unit Sales on your aged and/or excess inventory in Amazon Fulfillment Centers. Our goal is to help you increase the sales on this excess inventory:
+X004RR0607
+We encourage you to take Amazon recommended actions such as Create Outlet deals, Sponsor Products Ad, to improve sell through of this excess inventory and potentially reduce your chances of incurring aged inventory fee.
+ Outlet deals
+ Amazon Outlet is a great place for customers to shop for overstock deals, which offers a selection of items, such as electronics, toys, beauty, and kitchen.
+ Create Outlet Deal Today!
+ Sponsored Product Ads
+ Sponsored Products is a cost-per-click advertising solution that provides advertisers with a foundation of controls and visibility to help get their individual products discovered, and help generate sales from traffic sources in the Amazon store and on select premium apps and websites.
+ Create Sponsored Products Ad Today!
+We encourage you to view and execute ASIN level</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="act today &amp; improve sales on excess inventory the fulfillment by amazon team &lt;donotreply@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiNQEcBmm7yoGVYAAA3C_3">Act today &amp; improve Sales on Excess Inventory</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>The Fulfillment by Amazon team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 10:05:49 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:25</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+This title will display on mobile devices
+ Optional preview text
+ Hello,
+We noticed you have a number of ASIN(s) that have excess levels of inventory. We are reaching out to inform you about multiple options to improve your Unit Sales on your aged and/or excess inventory in Amazon Fulfillment Centers. Our goal is to help you increase the sales on this excess inventory:
+X004NUDN7B
+We encourage you to take Amazon recommended actions such as Create Outlet deals, Sponsor Products Ad, to improve sell through of this excess inventory and potentially reduce your chances of incurring aged inventory fee.
+ Outlet deals
+ Amazon Outlet is a great place for customers to shop for overstock deals, which offers a selection of items, such as electronics, toys, beauty, and kitchen.
+ Create Outlet Deal Today!
+ Sponsored Product Ads
+ Sponsored Products is a cost-per-click advertising solution that provides advertisers with a foundation of controls and visibility to help get their individual products discovered, and help generate sales from traffic sources in the Amazon store and on select premium apps and websites.
+ Create Sponsored Products Ad Today!
+We encourage you to view and execute ASIN level</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="seller news: march 2026 amazon europe &lt;donotreply@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbC7hzfnWm7vZxA7gAA3t_4">Seller News: March 2026</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>Amazon Europe &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 09:10:49 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Amazon Services
+ 96
+ Stay informed about selling on Amazon.
+ Our Seller Newsletter provides the most important policy, tool and programme updates from the past month.
+ Introducing a new, AI-powered workspace
+ You now have access to a dynamic canvas experience in Seller Central, where you can visualise data and key insights, explore scenarios and take critical actions to grow your business. This integrated, AI-native workspace combines chat and visual elements to provide highly personalised and actionable insights. Read more .
+ Upload Images now provides faster uploads and more flexibility
+ We’ve enhanced the image upload process in Upload Images to make managing images for your product catalogue faster and more flexible. Read more .
+ Save and track product research with Product Opportunity Explorer
+ Product Opportunity Explorer now includes a feature that helps you save and organise your research. You can identify profitable opportunities with low competition and save those promising product niches and ASINs with a single click. Read more .
+ Account health tips for multiple selling accounts
+ Our multiple-accounts policy allows you to operate one account per region unless you have a</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="seller news: march 2026 amazon europe &lt;donotreply@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIgGokmm7vMGNpQAA3e_5">Seller News: March 2026</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>Amazon Europe &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 09:07:09 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:25</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Amazon Services
+ 96
+ Stay informed about selling on Amazon.
+ Our Seller Newsletter provides the most important policy, tool and programme updates from the past month.
+ Introducing a new, AI-powered workspace
+ You now have access to a dynamic canvas experience in Seller Central, where you can visualise data and key insights, explore scenarios and take critical actions to grow your business. This integrated, AI-native workspace combines chat and visual elements to provide highly personalised and actionable insights. Read more .
+ Upload Images now provides faster uploads and more flexibility
+ We’ve enhanced the image upload process in Upload Images to make managing images for your product catalogue faster and more flexible. Read more .
+ Save and track product research with Product Opportunity Explorer
+ Product Opportunity Explorer now includes a feature that helps you save and organise your research. You can identify profitable opportunities with low competition and save those promising product niches and ASINs with a single click. Read more .
+ Account health tips for multiple selling accounts
+ Our multiple-accounts policy allows you to operate one account per region unless you have a</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="seller news: march 2026 amazon europe &lt;donotreply@amazon.com&gt;  account_4">
+                    <div class="mail-title" id="mail___account_4_xtbBpBJcQmm7u5LH_wAA3v_6">Seller News: March 2026</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_4</span>
+                        <span><b>发件人：</b>Amazon Europe &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 09:02:06 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Amazon Services
+ 96
+ Stay informed about selling on Amazon.
+ Our Seller Newsletter provides the most important policy, tool and programme updates from the past month.
+ Introducing a new, AI-powered workspace
+ You now have access to a dynamic canvas experience in Seller Central, where you can visualise data and key insights, explore scenarios and take critical actions to grow your business. This integrated, AI-native workspace combines chat and visual elements to provide highly personalised and actionable insights. Read more .
+ Upload Images now provides faster uploads and more flexibility
+ We’ve enhanced the image upload process in Upload Images to make managing images for your product catalogue faster and more flexible. Read more .
+ Save and track product research with Product Opportunity Explorer
+ Product Opportunity Explorer now includes a feature that helps you save and organise your research. You can identify profitable opportunities with low competition and save those promising product niches and ASINs with a single click. Read more .
+ Account health tips for multiple selling accounts
+ Our multiple-accounts policy allows you to operate one account per region unless you have a</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="reduce returns &amp; boost customer satisfaction - enrol in amazon
+ product support amazon product support team &lt;donotreply@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbCxhhvLWm7n-gSUQAA3q_7">Reduce Returns &amp; Boost Customer Satisfaction - Enrol in Amazon
+ Product Support</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>Amazon Product Support team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 07:04:20 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+ Enrol now into Amazon Product Support !
+ Hello,
+ Greetings from Amazon Product Support.
+ Every product returned costs time, money, and customer trust. That’s why Amazon offers Product Support, a suite of post-purchase solutions that help customers solve problems quickly and keep products in use. In 2025, approximately 50% of customers who engaged with Product Support did not return their product. *
+ Enroll now and learn more about Amazon Product Support
+ Here’s how you can reduce returns and help customers:
+ • Manufacturer Support - A customer has a question about your product? They can contact your experts directly. In 2025, approximately 64% of customers who contacted support through Manufacturer Support did not return their product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Belgium, Sweden, Poland, and the Netherlands.
+ • Brand Integration - Call &amp; Chat - A customer runs into a setup issue and wants instant help? Provide live calls or chat support. In 2025, approximately 58% of customers who contacted support through Brand Integration - Call &amp; Chat did not return the product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Be</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="reduce returns &amp; boost customer satisfaction - enrol in amazon
+ product support amazon product support team &lt;donotreply@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIQE5I2m7nyEXpAAA3l_8">Reduce Returns &amp; Boost Customer Satisfaction - Enrol in Amazon
+ Product Support</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>Amazon Product Support team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 07:00:47 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:24</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+ Enrol now into Amazon Product Support !
+ Hello,
+ Greetings from Amazon Product Support.
+ Every product returned costs time, money, and customer trust. That’s why Amazon offers Product Support, a suite of post-purchase solutions that help customers solve problems quickly and keep products in use. In 2025, approximately 50% of customers who engaged with Product Support did not return their product. *
+ Enroll now and learn more about Amazon Product Support
+ Here’s how you can reduce returns and help customers:
+ • Manufacturer Support - A customer has a question about your product? They can contact your experts directly. In 2025, approximately 64% of customers who contacted support through Manufacturer Support did not return their product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Belgium, Sweden, Poland, and the Netherlands.
+ • Brand Integration - Call &amp; Chat - A customer runs into a setup issue and wants instant help? Provide live calls or chat support. In 2025, approximately 58% of customers who contacted support through Brand Integration - Call &amp; Chat did not return the product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Be</pre>
+                    </details>
+                </div>
+                
+                    </div>
+                </details>
+            </div>
+            
+            <div class="category-block time-panel" data-mode="today">
+                <div class="category-header">
+                    <div class="category-name">货件/库存类</div>
+                    <div class="category-count">共 1 封</div>
+                </div>
+                <details class="category-details">
+                    <summary>展开/收起</summary>
+                    <div class="category-body">
+                        
+                <div class="mail-card searchable-card" data-search="important: serial numbers required for certain items transparency &lt;transparency1@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIh3Ermm7sT1oagAA3J_1">Important: Serial numbers required for certain items</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>Transparency &lt;transparency1@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 08:17:55 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:25</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Hello from Amazon Seller Services,
+The products listed below have been enrolled in the Transparency program by the brand owner. This means that the product is manufactured with a serial number. The serial number can be either a 2D Transparency branded barcode (these are 26 characters long and include a &quot;T&quot; logo) or a 1D or 2D serial number barcode (these are between 7 and 20 characters long and may include the pre-fix &quot;SN&quot;).
+To ensure product authenticity for your customers, we will require that these products have a Transparency barcode or serial number barcode affixed to the outer packaging of each individual unit of the product in order to be accepted by Amazon.
+Below is the list of ASINs that will require a Transparency barcode or serial number barcode from the manufacturer or brand.
+ASIN
+Title
+Target Inbound Date
+B0GCDSCPN1
+MagnetischeBausteine
+4/14/2026
+Amazon scans these barcode labels to verify the authenticity of the products. Your customers also can scan your Transparency barcode with the Transparency mobile app to confirm the item is not a counterfeit.
+Please contact the respective Brand or your distributor on any further information on the availability of the products w</pre>
+                    </details>
+                </div>
+                
+                    </div>
+                </details>
+            </div>
+            
+        
+            <div class="category-block time-panel" data-mode="last7">
+                <div class="category-header">
+                    <div class="category-name">产品链接/合规类</div>
+                    <div class="category-count">共 5 封</div>
+                </div>
+                <details class="category-details">
+                    <summary>展开/收起</summary>
+                    <div class="category-body">
+                        
+                <div class="mail-card searchable-card" data-search="seller: a3tg87v6zg3wix, asin: b0ff1qpd5b, marketplace: 6 - ps - doc
+ review &quot;pa-child-safety@amazon.co.jp&quot; &lt;pa-child-safety@amazon.co.jp&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbC7QJ9O2m7sCLAAwAA3q_1">SELLER: A3TG87V6ZG3WIX, ASIN: B0FF1QPD5B, MARKETPLACE: 6 - PS - DOC
+ REVIEW</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>&quot;pa-child-safety@amazon.co.jp&quot; &lt;pa-child-safety@amazon.co.jp&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 08:13:19 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>ご担当者様
+平素はAmazon.co.jp をご利用いただき、ありがとうございます。
+お問い合わせいただいた商品は当審査の対象外のため、販売継続とさせていただいております。特に追加の対応は必要ございません。
+なお今後審査の対象になります場合には、別途ご連絡いたします。
+Amazonでは販売パートナーの皆様とのコミュニケーションの質を向上させるため、1分ほどのアンケートへの協力をお願いしています。ぜひご回答をお願いいたします。
+https://amazonexteu.qualtrics.com/jfe/form/SV_e2Pw4eFXjFviYfA?pm=UPSC&amp;case=3263444313
+引き続き弊社の製品安全プログラムへご協力をお願い申し上げます。
+To help us continually improve, we ask that you take a moment to complete our survey below. This would help us understand your overall compliance experience.
+Were you satisfied with the support provided?
+If yes, please click here:
+http://www.amazon.co.jp/gp/help/survey?p=A1MSA39KTZYOP3&amp;k=hy
+If no, please click here:
+http://www.amazon.co.jp/gp/help/survey?p=A1MSA39KTZYOP3&amp;k=hn</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12228008522] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持 &quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIBBBK2m7j1DrswAA3P_2">RE:[CASE 12228008522] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>&quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:53:17 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:24</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>亲爱的卖家，
+这是关于我们爱尔兰条款与条件重要更新的重要通知。
+重要更正： 我们之前曾告知任何税务顾问都可用于爱尔兰增值税注册。这是一个错误。根据我们条款与条件的更新，现在只有以下税务顾问被接受用于爱尔兰增值税报销计划：
+•AVASK
+•J&amp;P Accountants
+•Taxually
+•Expandly
+•EURep
+•EVatmaster
+•VATAi
+•Amber
+如需了解更多信息，请阅读条款与条件：m.media-amazon.com/images/G/01/EU_COMPLIANCE_TEAM/IE_VAT_Terms_and_Conditions.pdf
+添加您的税务信息
+如需添加税务信息，请访问税务设置：sellercentral.amazon.com/tax/consolidatedRegistrations
+**为什么需要增值税注册？**
+欧盟税法要求使用FBA的卖家在库存存储的国家/地区注册增值税。亚马逊验证税务信息以遵守税务机关要求，并确保增值税准确应用于您的销售。
+了解更多关于欧洲增值税注册要求的信息：sellercentral.amazon.com/help/hub/reference/GTQ23HPXBQK563WS
+如有疑问，请通过您的案例日志联系我们：sellercentral.amazon.com/cu/case-lobby?ref_=xx_case_dnav_xx
+如有疑问，请扫码加入亚马逊卖家合规群：
+https://m.media-amazon.com/images/G/01/CN_Compliance_Team/mass_wecom_jm.jpg
+Amazon Global Selling Seller Compliance Team</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12227975792] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持 &quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbCxQQ_2m7j0RocQAA3E_3">RE:[CASE 12227975792] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>&quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:53:05 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:22</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>亲爱的卖家，
+这是关于我们爱尔兰条款与条件重要更新的重要通知。
+重要更正： 我们之前曾告知任何税务顾问都可用于爱尔兰增值税注册。这是一个错误。根据我们条款与条件的更新，现在只有以下税务顾问被接受用于爱尔兰增值税报销计划：
+•AVASK
+•J&amp;P Accountants
+•Taxually
+•Expandly
+•EURep
+•EVatmaster
+•VATAi
+•Amber
+如需了解更多信息，请阅读条款与条件：m.media-amazon.com/images/G/01/EU_COMPLIANCE_TEAM/IE_VAT_Terms_and_Conditions.pdf
+添加您的税务信息
+如需添加税务信息，请访问税务设置：sellercentral.amazon.com/tax/consolidatedRegistrations
+**为什么需要增值税注册？**
+欧盟税法要求使用FBA的卖家在库存存储的国家/地区注册增值税。亚马逊验证税务信息以遵守税务机关要求，并确保增值税准确应用于您的销售。
+了解更多关于欧洲增值税注册要求的信息：sellercentral.amazon.com/help/hub/reference/GTQ23HPXBQK563WS
+如有疑问，请通过您的案例日志联系我们：sellercentral.amazon.com/cu/case-lobby?ref_=xx_case_dnav_xx
+如有疑问，请扫码加入亚马逊卖家合规群：
+https://m.media-amazon.com/images/G/01/CN_Compliance_Team/mass_wecom_yt.jpg
+Amazon Global Selling Seller Compliance Team</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12234298032] ae - restricted products - appeal - asin:
+ b0f74j7n8d &quot;pars-rp-core-sellerappeals@amazon.ae&quot; &lt;pars-rp-core-sellerappeals@amazon.ae&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiOREI8Wm7inEw0AAA3Y_4">RE:[CASE 12234298032] AE - Restricted Products - Appeal - ASIN:
+ B0F74J7N8D</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>&quot;pars-rp-core-sellerappeals@amazon.ae&quot; &lt;pars-rp-core-sellerappeals@amazon.ae&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:32:26 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:24</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Hello,
+We received your submission and after careful review we have determined that your ASINs do not meet the criteria for reinstatement.
+Why did this happen?
+Your listings do not meet our standards. Refer to the following details:
+ASIN: B0F74J7N8D
+Title:مكعبات مغناطيسية 150 قطعة 2 سم، ألعاب مونتيسوري مغناطيسية للأطفال، عالم البناء المغناطيسي هدية عيد ميلاد من 3 4 5 6 7 8 9 10 11 12 أولاد بنات
+This product has been identified as containing aggregate masses of small and powerful individual rare earth magnets. Due to a product recall of the rapid alert system of the EU (RAPEX), Amazon policy prohibits the sale and listing of these types of products.
+Thank you for flagging asins (B0FB9MPZMZ,B0FBGHLBCK,B0DQ56DF7Q,B0CN95SQ6J), we have reach out to concern department to handle.
+You can access the previous communication sent to you in regards to this matter via the &quot;Performance notifications&quot; page in the &quot;Performance&quot; section of Seller Central:
+https://sellercentral.amazon.ae/performance/notifications
+We’re here to help
+For information on our policies, you can go to the following pages:
+-- &quot;Restricted products&quot;:
+https://sellercentral.amazon.ae/gp/help/201743940?referral=A1TVXVCFZDLUHK_A2</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12234263722] sa - restricted products - appeal - asin:
+ b0gcjy4d3n &quot;pars-rp-core-sellerappeals@amazon.sa&quot; &lt;pars-rp-core-sellerappeals@amazon.sa&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIAlFL2m7h2nRhgAA3o_5">RE:[CASE 12234263722] SA - Restricted Products - Appeal - ASIN:
+ B0GCJY4D3N</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>&quot;pars-rp-core-sellerappeals@amazon.sa&quot; &lt;pars-rp-core-sellerappeals@amazon.sa&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:19:31 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 13:24:41</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Hello,
+We received your submission and after careful review we have determined that your ASINs do not meet the criteria for reinstatement.
+Why did this happen?
+Your listings do not meet our standards. Refer to the following details:
+ASIN: B0GCJY4D3N
+Title: Crifeton Magnetic Building Blocks 220
+This product has been identified as containing aggregate masses of small and powerful individual rare earth magnets. Due to a product recall of the rapid alert system of the EU (RAPEX), Amazon policy prohibits the sale and listing of these types of products.
+Thank you for flagging asins (B0FB9MPZMZ,B0FBGHLBCK,B0DQ56DF7Q,B0CN95SQ6J), we have reach out to concern department to handle.
+You can access the previous communication sent to you in regards to this matter via the &quot;Performance notifications&quot; page in the &quot;Performance&quot; section of Seller Central:
+https://sellercentral.amazon.sa/performance/notifications
+We’re here to help
+For information on our policies, you can go to the following pages:
+-- &quot;Restricted products&quot;:
+https://sellercentral.amazon.sa/gp/help/201743940?referral=A262YZ69IPGLKF_A2G9FIS6VFDCLW&amp;referral=A3Q9SELOQ79HDN_A2G9FIS6VFDCLW
+-- &quot;Restricted Products FAQ&quot;:
+https://sellercentral</pre>
+                    </details>
+                </div>
+                
+                    </div>
+                </details>
+            </div>
+            
+            <div class="category-block time-panel" data-mode="last7">
+                <div class="category-header">
+                    <div class="category-name">法务/侵权类</div>
+                    <div class="category-count">共 8 封</div>
+                </div>
+                <details class="category-details">
+                    <summary>展开/收起</summary>
+                    <div class="category-body">
+                        
+                <div class="mail-card searchable-card" data-search="act today &amp; improve sales on excess inventory the fulfillment by amazon team &lt;donotreply@amazon.com&gt;  account_4">
+                    <div class="mail-title" id="mail___account_4_xtbBsgZGLGm7zybj7wAA3p_1">Act today &amp; improve Sales on Excess Inventory</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_4</span>
+                        <span><b>发件人：</b>The Fulfillment by Amazon team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 10:25:38 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:28:14</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+This title will display on mobile devices
+ Optional preview text
+ Hello,
+We noticed you have a number of ASIN(s) that have excess levels of inventory. We are reaching out to inform you about multiple options to improve your Unit Sales on your aged and/or excess inventory in Amazon Fulfillment Centers. Our goal is to help you increase the sales on this excess inventory:
+X004QEYPRL, X004QFJQLF, X004MMFUYT, X004QEVV05, X004K6ILMZ
+We encourage you to take Amazon recommended actions such as Create Outlet deals, Sponsor Products Ad, to improve sell through of this excess inventory and potentially reduce your chances of incurring aged inventory fee.
+ Outlet deals
+ Amazon Outlet is a great place for customers to shop for overstock deals, which offers a selection of items, such as electronics, toys, beauty, and kitchen.
+ Create Outlet Deal Today!
+ Sponsored Product Ads
+ Sponsored Products is a cost-per-click advertising solution that provides advertisers with a foundation of controls and visibility to help get their individual products discovered, and help generate sales from traffic sources in the Amazon store and on select premium apps and websites.
+ Create Sponsored Products Ad Today!</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="act today &amp; improve sales on excess inventory the fulfillment by amazon team &lt;donotreply@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbCxQku62m7ysk_JwAA3B_2">Act today &amp; improve Sales on Excess Inventory</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>The Fulfillment by Amazon team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 10:07:03 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+This title will display on mobile devices
+ Optional preview text
+ Hello,
+We noticed you have a number of ASIN(s) that have excess levels of inventory. We are reaching out to inform you about multiple options to improve your Unit Sales on your aged and/or excess inventory in Amazon Fulfillment Centers. Our goal is to help you increase the sales on this excess inventory:
+X004RR0607
+We encourage you to take Amazon recommended actions such as Create Outlet deals, Sponsor Products Ad, to improve sell through of this excess inventory and potentially reduce your chances of incurring aged inventory fee.
+ Outlet deals
+ Amazon Outlet is a great place for customers to shop for overstock deals, which offers a selection of items, such as electronics, toys, beauty, and kitchen.
+ Create Outlet Deal Today!
+ Sponsored Product Ads
+ Sponsored Products is a cost-per-click advertising solution that provides advertisers with a foundation of controls and visibility to help get their individual products discovered, and help generate sales from traffic sources in the Amazon store and on select premium apps and websites.
+ Create Sponsored Products Ad Today!
+We encourage you to view and execute ASIN level</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="act today &amp; improve sales on excess inventory the fulfillment by amazon team &lt;donotreply@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiNQEcBmm7yoGVYAAA3C_3">Act today &amp; improve Sales on Excess Inventory</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>The Fulfillment by Amazon team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 10:05:49 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:25</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+This title will display on mobile devices
+ Optional preview text
+ Hello,
+We noticed you have a number of ASIN(s) that have excess levels of inventory. We are reaching out to inform you about multiple options to improve your Unit Sales on your aged and/or excess inventory in Amazon Fulfillment Centers. Our goal is to help you increase the sales on this excess inventory:
+X004NUDN7B
+We encourage you to take Amazon recommended actions such as Create Outlet deals, Sponsor Products Ad, to improve sell through of this excess inventory and potentially reduce your chances of incurring aged inventory fee.
+ Outlet deals
+ Amazon Outlet is a great place for customers to shop for overstock deals, which offers a selection of items, such as electronics, toys, beauty, and kitchen.
+ Create Outlet Deal Today!
+ Sponsored Product Ads
+ Sponsored Products is a cost-per-click advertising solution that provides advertisers with a foundation of controls and visibility to help get their individual products discovered, and help generate sales from traffic sources in the Amazon store and on select premium apps and websites.
+ Create Sponsored Products Ad Today!
+We encourage you to view and execute ASIN level</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="seller news: march 2026 amazon europe &lt;donotreply@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbC7hzfnWm7vZxA7gAA3t_4">Seller News: March 2026</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>Amazon Europe &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 09:10:49 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Amazon Services
+ 96
+ Stay informed about selling on Amazon.
+ Our Seller Newsletter provides the most important policy, tool and programme updates from the past month.
+ Introducing a new, AI-powered workspace
+ You now have access to a dynamic canvas experience in Seller Central, where you can visualise data and key insights, explore scenarios and take critical actions to grow your business. This integrated, AI-native workspace combines chat and visual elements to provide highly personalised and actionable insights. Read more .
+ Upload Images now provides faster uploads and more flexibility
+ We’ve enhanced the image upload process in Upload Images to make managing images for your product catalogue faster and more flexible. Read more .
+ Save and track product research with Product Opportunity Explorer
+ Product Opportunity Explorer now includes a feature that helps you save and organise your research. You can identify profitable opportunities with low competition and save those promising product niches and ASINs with a single click. Read more .
+ Account health tips for multiple selling accounts
+ Our multiple-accounts policy allows you to operate one account per region unless you have a</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="seller news: march 2026 amazon europe &lt;donotreply@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIgGokmm7vMGNpQAA3e_5">Seller News: March 2026</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>Amazon Europe &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 09:07:09 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:25</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Amazon Services
+ 96
+ Stay informed about selling on Amazon.
+ Our Seller Newsletter provides the most important policy, tool and programme updates from the past month.
+ Introducing a new, AI-powered workspace
+ You now have access to a dynamic canvas experience in Seller Central, where you can visualise data and key insights, explore scenarios and take critical actions to grow your business. This integrated, AI-native workspace combines chat and visual elements to provide highly personalised and actionable insights. Read more .
+ Upload Images now provides faster uploads and more flexibility
+ We’ve enhanced the image upload process in Upload Images to make managing images for your product catalogue faster and more flexible. Read more .
+ Save and track product research with Product Opportunity Explorer
+ Product Opportunity Explorer now includes a feature that helps you save and organise your research. You can identify profitable opportunities with low competition and save those promising product niches and ASINs with a single click. Read more .
+ Account health tips for multiple selling accounts
+ Our multiple-accounts policy allows you to operate one account per region unless you have a</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="seller news: march 2026 amazon europe &lt;donotreply@amazon.com&gt;  account_4">
+                    <div class="mail-title" id="mail___account_4_xtbBpBJcQmm7u5LH_wAA3v_6">Seller News: March 2026</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_4</span>
+                        <span><b>发件人：</b>Amazon Europe &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 09:02:06 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Amazon Services
+ 96
+ Stay informed about selling on Amazon.
+ Our Seller Newsletter provides the most important policy, tool and programme updates from the past month.
+ Introducing a new, AI-powered workspace
+ You now have access to a dynamic canvas experience in Seller Central, where you can visualise data and key insights, explore scenarios and take critical actions to grow your business. This integrated, AI-native workspace combines chat and visual elements to provide highly personalised and actionable insights. Read more .
+ Upload Images now provides faster uploads and more flexibility
+ We’ve enhanced the image upload process in Upload Images to make managing images for your product catalogue faster and more flexible. Read more .
+ Save and track product research with Product Opportunity Explorer
+ Product Opportunity Explorer now includes a feature that helps you save and organise your research. You can identify profitable opportunities with low competition and save those promising product niches and ASINs with a single click. Read more .
+ Account health tips for multiple selling accounts
+ Our multiple-accounts policy allows you to operate one account per region unless you have a</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="reduce returns &amp; boost customer satisfaction - enrol in amazon
+ product support amazon product support team &lt;donotreply@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbCxhhvLWm7n-gSUQAA3q_7">Reduce Returns &amp; Boost Customer Satisfaction - Enrol in Amazon
+ Product Support</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>Amazon Product Support team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 07:04:20 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+ Enrol now into Amazon Product Support !
+ Hello,
+ Greetings from Amazon Product Support.
+ Every product returned costs time, money, and customer trust. That’s why Amazon offers Product Support, a suite of post-purchase solutions that help customers solve problems quickly and keep products in use. In 2025, approximately 50% of customers who engaged with Product Support did not return their product. *
+ Enroll now and learn more about Amazon Product Support
+ Here’s how you can reduce returns and help customers:
+ • Manufacturer Support - A customer has a question about your product? They can contact your experts directly. In 2025, approximately 64% of customers who contacted support through Manufacturer Support did not return their product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Belgium, Sweden, Poland, and the Netherlands.
+ • Brand Integration - Call &amp; Chat - A customer runs into a setup issue and wants instant help? Provide live calls or chat support. In 2025, approximately 58% of customers who contacted support through Brand Integration - Call &amp; Chat did not return the product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Be</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="reduce returns &amp; boost customer satisfaction - enrol in amazon
+ product support amazon product support team &lt;donotreply@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIQE5I2m7nyEXpAAA3l_8">Reduce Returns &amp; Boost Customer Satisfaction - Enrol in Amazon
+ Product Support</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>Amazon Product Support team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 07:00:47 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:24</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+ Enrol now into Amazon Product Support !
+ Hello,
+ Greetings from Amazon Product Support.
+ Every product returned costs time, money, and customer trust. That’s why Amazon offers Product Support, a suite of post-purchase solutions that help customers solve problems quickly and keep products in use. In 2025, approximately 50% of customers who engaged with Product Support did not return their product. *
+ Enroll now and learn more about Amazon Product Support
+ Here’s how you can reduce returns and help customers:
+ • Manufacturer Support - A customer has a question about your product? They can contact your experts directly. In 2025, approximately 64% of customers who contacted support through Manufacturer Support did not return their product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Belgium, Sweden, Poland, and the Netherlands.
+ • Brand Integration - Call &amp; Chat - A customer runs into a setup issue and wants instant help? Provide live calls or chat support. In 2025, approximately 58% of customers who contacted support through Brand Integration - Call &amp; Chat did not return the product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Be</pre>
+                    </details>
+                </div>
+                
+                    </div>
+                </details>
+            </div>
+            
+            <div class="category-block time-panel" data-mode="last7">
+                <div class="category-header">
+                    <div class="category-name">货件/库存类</div>
+                    <div class="category-count">共 1 封</div>
+                </div>
+                <details class="category-details">
+                    <summary>展开/收起</summary>
+                    <div class="category-body">
+                        
+                <div class="mail-card searchable-card" data-search="important: serial numbers required for certain items transparency &lt;transparency1@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIh3Ermm7sT1oagAA3J_1">Important: Serial numbers required for certain items</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>Transparency &lt;transparency1@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 08:17:55 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:25</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Hello from Amazon Seller Services,
+The products listed below have been enrolled in the Transparency program by the brand owner. This means that the product is manufactured with a serial number. The serial number can be either a 2D Transparency branded barcode (these are 26 characters long and include a &quot;T&quot; logo) or a 1D or 2D serial number barcode (these are between 7 and 20 characters long and may include the pre-fix &quot;SN&quot;).
+To ensure product authenticity for your customers, we will require that these products have a Transparency barcode or serial number barcode affixed to the outer packaging of each individual unit of the product in order to be accepted by Amazon.
+Below is the list of ASINs that will require a Transparency barcode or serial number barcode from the manufacturer or brand.
+ASIN
+Title
+Target Inbound Date
+B0GCDSCPN1
+MagnetischeBausteine
+4/14/2026
+Amazon scans these barcode labels to verify the authenticity of the products. Your customers also can scan your Transparency barcode with the Transparency mobile app to confirm the item is not a counterfeit.
+Please contact the respective Brand or your distributor on any further information on the availability of the products w</pre>
+                    </details>
+                </div>
+                
+                    </div>
+                </details>
+            </div>
+            
+        
+            <div class="category-block time-panel" data-mode="all">
+                <div class="category-header">
+                    <div class="category-name">产品链接/合规类</div>
+                    <div class="category-count">共 5 封</div>
+                </div>
+                <details class="category-details">
+                    <summary>展开/收起</summary>
+                    <div class="category-body">
+                        
+                <div class="mail-card searchable-card" data-search="seller: a3tg87v6zg3wix, asin: b0ff1qpd5b, marketplace: 6 - ps - doc
+ review &quot;pa-child-safety@amazon.co.jp&quot; &lt;pa-child-safety@amazon.co.jp&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbC7QJ9O2m7sCLAAwAA3q_1">SELLER: A3TG87V6ZG3WIX, ASIN: B0FF1QPD5B, MARKETPLACE: 6 - PS - DOC
+ REVIEW</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>&quot;pa-child-safety@amazon.co.jp&quot; &lt;pa-child-safety@amazon.co.jp&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 08:13:19 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>ご担当者様
+平素はAmazon.co.jp をご利用いただき、ありがとうございます。
+お問い合わせいただいた商品は当審査の対象外のため、販売継続とさせていただいております。特に追加の対応は必要ございません。
+なお今後審査の対象になります場合には、別途ご連絡いたします。
+Amazonでは販売パートナーの皆様とのコミュニケーションの質を向上させるため、1分ほどのアンケートへの協力をお願いしています。ぜひご回答をお願いいたします。
+https://amazonexteu.qualtrics.com/jfe/form/SV_e2Pw4eFXjFviYfA?pm=UPSC&amp;case=3263444313
+引き続き弊社の製品安全プログラムへご協力をお願い申し上げます。
+To help us continually improve, we ask that you take a moment to complete our survey below. This would help us understand your overall compliance experience.
+Were you satisfied with the support provided?
+If yes, please click here:
+http://www.amazon.co.jp/gp/help/survey?p=A1MSA39KTZYOP3&amp;k=hy
+If no, please click here:
+http://www.amazon.co.jp/gp/help/survey?p=A1MSA39KTZYOP3&amp;k=hn</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12228008522] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持 &quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIBBBK2m7j1DrswAA3P_2">RE:[CASE 12228008522] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>&quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:53:17 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:24</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>亲爱的卖家，
+这是关于我们爱尔兰条款与条件重要更新的重要通知。
+重要更正： 我们之前曾告知任何税务顾问都可用于爱尔兰增值税注册。这是一个错误。根据我们条款与条件的更新，现在只有以下税务顾问被接受用于爱尔兰增值税报销计划：
+•AVASK
+•J&amp;P Accountants
+•Taxually
+•Expandly
+•EURep
+•EVatmaster
+•VATAi
+•Amber
+如需了解更多信息，请阅读条款与条件：m.media-amazon.com/images/G/01/EU_COMPLIANCE_TEAM/IE_VAT_Terms_and_Conditions.pdf
+添加您的税务信息
+如需添加税务信息，请访问税务设置：sellercentral.amazon.com/tax/consolidatedRegistrations
+**为什么需要增值税注册？**
+欧盟税法要求使用FBA的卖家在库存存储的国家/地区注册增值税。亚马逊验证税务信息以遵守税务机关要求，并确保增值税准确应用于您的销售。
+了解更多关于欧洲增值税注册要求的信息：sellercentral.amazon.com/help/hub/reference/GTQ23HPXBQK563WS
+如有疑问，请通过您的案例日志联系我们：sellercentral.amazon.com/cu/case-lobby?ref_=xx_case_dnav_xx
+如有疑问，请扫码加入亚马逊卖家合规群：
+https://m.media-amazon.com/images/G/01/CN_Compliance_Team/mass_wecom_jm.jpg
+Amazon Global Selling Seller Compliance Team</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12227975792] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持 &quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbCxQQ_2m7j0RocQAA3E_3">RE:[CASE 12227975792] 【需要采取行动】 - 波兰和爱尔兰的增值税合规支持</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>&quot;compliance-ops-mass-programs@amazon.com&quot; &lt;compliance-ops-mass-programs@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:53:05 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:22</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>亲爱的卖家，
+这是关于我们爱尔兰条款与条件重要更新的重要通知。
+重要更正： 我们之前曾告知任何税务顾问都可用于爱尔兰增值税注册。这是一个错误。根据我们条款与条件的更新，现在只有以下税务顾问被接受用于爱尔兰增值税报销计划：
+•AVASK
+•J&amp;P Accountants
+•Taxually
+•Expandly
+•EURep
+•EVatmaster
+•VATAi
+•Amber
+如需了解更多信息，请阅读条款与条件：m.media-amazon.com/images/G/01/EU_COMPLIANCE_TEAM/IE_VAT_Terms_and_Conditions.pdf
+添加您的税务信息
+如需添加税务信息，请访问税务设置：sellercentral.amazon.com/tax/consolidatedRegistrations
+**为什么需要增值税注册？**
+欧盟税法要求使用FBA的卖家在库存存储的国家/地区注册增值税。亚马逊验证税务信息以遵守税务机关要求，并确保增值税准确应用于您的销售。
+了解更多关于欧洲增值税注册要求的信息：sellercentral.amazon.com/help/hub/reference/GTQ23HPXBQK563WS
+如有疑问，请通过您的案例日志联系我们：sellercentral.amazon.com/cu/case-lobby?ref_=xx_case_dnav_xx
+如有疑问，请扫码加入亚马逊卖家合规群：
+https://m.media-amazon.com/images/G/01/CN_Compliance_Team/mass_wecom_yt.jpg
+Amazon Global Selling Seller Compliance Team</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12234298032] ae - restricted products - appeal - asin:
+ b0f74j7n8d &quot;pars-rp-core-sellerappeals@amazon.ae&quot; &lt;pars-rp-core-sellerappeals@amazon.ae&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiOREI8Wm7inEw0AAA3Y_4">RE:[CASE 12234298032] AE - Restricted Products - Appeal - ASIN:
+ B0F74J7N8D</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>&quot;pars-rp-core-sellerappeals@amazon.ae&quot; &lt;pars-rp-core-sellerappeals@amazon.ae&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:32:26 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:24</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Hello,
+We received your submission and after careful review we have determined that your ASINs do not meet the criteria for reinstatement.
+Why did this happen?
+Your listings do not meet our standards. Refer to the following details:
+ASIN: B0F74J7N8D
+Title:مكعبات مغناطيسية 150 قطعة 2 سم، ألعاب مونتيسوري مغناطيسية للأطفال، عالم البناء المغناطيسي هدية عيد ميلاد من 3 4 5 6 7 8 9 10 11 12 أولاد بنات
+This product has been identified as containing aggregate masses of small and powerful individual rare earth magnets. Due to a product recall of the rapid alert system of the EU (RAPEX), Amazon policy prohibits the sale and listing of these types of products.
+Thank you for flagging asins (B0FB9MPZMZ,B0FBGHLBCK,B0DQ56DF7Q,B0CN95SQ6J), we have reach out to concern department to handle.
+You can access the previous communication sent to you in regards to this matter via the &quot;Performance notifications&quot; page in the &quot;Performance&quot; section of Seller Central:
+https://sellercentral.amazon.ae/performance/notifications
+We’re here to help
+For information on our policies, you can go to the following pages:
+-- &quot;Restricted products&quot;:
+https://sellercentral.amazon.ae/gp/help/201743940?referral=A1TVXVCFZDLUHK_A2</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="re:[case 12234263722] sa - restricted products - appeal - asin:
+ b0gcjy4d3n &quot;pars-rp-core-sellerappeals@amazon.sa&quot; &lt;pars-rp-core-sellerappeals@amazon.sa&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIAlFL2m7h2nRhgAA3o_5">RE:[CASE 12234263722] SA - Restricted Products - Appeal - ASIN:
+ B0GCJY4D3N</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>&quot;pars-rp-core-sellerappeals@amazon.sa&quot; &lt;pars-rp-core-sellerappeals@amazon.sa&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 05:19:31 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 13:24:41</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Hello,
+We received your submission and after careful review we have determined that your ASINs do not meet the criteria for reinstatement.
+Why did this happen?
+Your listings do not meet our standards. Refer to the following details:
+ASIN: B0GCJY4D3N
+Title: Crifeton Magnetic Building Blocks 220
+This product has been identified as containing aggregate masses of small and powerful individual rare earth magnets. Due to a product recall of the rapid alert system of the EU (RAPEX), Amazon policy prohibits the sale and listing of these types of products.
+Thank you for flagging asins (B0FB9MPZMZ,B0FBGHLBCK,B0DQ56DF7Q,B0CN95SQ6J), we have reach out to concern department to handle.
+You can access the previous communication sent to you in regards to this matter via the &quot;Performance notifications&quot; page in the &quot;Performance&quot; section of Seller Central:
+https://sellercentral.amazon.sa/performance/notifications
+We’re here to help
+For information on our policies, you can go to the following pages:
+-- &quot;Restricted products&quot;:
+https://sellercentral.amazon.sa/gp/help/201743940?referral=A262YZ69IPGLKF_A2G9FIS6VFDCLW&amp;referral=A3Q9SELOQ79HDN_A2G9FIS6VFDCLW
+-- &quot;Restricted Products FAQ&quot;:
+https://sellercentral</pre>
+                    </details>
+                </div>
+                
+                    </div>
+                </details>
+            </div>
+            
+            <div class="category-block time-panel" data-mode="all">
+                <div class="category-header">
+                    <div class="category-name">法务/侵权类</div>
+                    <div class="category-count">共 8 封</div>
+                </div>
+                <details class="category-details">
+                    <summary>展开/收起</summary>
+                    <div class="category-body">
+                        
+                <div class="mail-card searchable-card" data-search="act today &amp; improve sales on excess inventory the fulfillment by amazon team &lt;donotreply@amazon.com&gt;  account_4">
+                    <div class="mail-title" id="mail___account_4_xtbBsgZGLGm7zybj7wAA3p_1">Act today &amp; improve Sales on Excess Inventory</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_4</span>
+                        <span><b>发件人：</b>The Fulfillment by Amazon team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 10:25:38 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:28:14</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+This title will display on mobile devices
+ Optional preview text
+ Hello,
+We noticed you have a number of ASIN(s) that have excess levels of inventory. We are reaching out to inform you about multiple options to improve your Unit Sales on your aged and/or excess inventory in Amazon Fulfillment Centers. Our goal is to help you increase the sales on this excess inventory:
+X004QEYPRL, X004QFJQLF, X004MMFUYT, X004QEVV05, X004K6ILMZ
+We encourage you to take Amazon recommended actions such as Create Outlet deals, Sponsor Products Ad, to improve sell through of this excess inventory and potentially reduce your chances of incurring aged inventory fee.
+ Outlet deals
+ Amazon Outlet is a great place for customers to shop for overstock deals, which offers a selection of items, such as electronics, toys, beauty, and kitchen.
+ Create Outlet Deal Today!
+ Sponsored Product Ads
+ Sponsored Products is a cost-per-click advertising solution that provides advertisers with a foundation of controls and visibility to help get their individual products discovered, and help generate sales from traffic sources in the Amazon store and on select premium apps and websites.
+ Create Sponsored Products Ad Today!</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="act today &amp; improve sales on excess inventory the fulfillment by amazon team &lt;donotreply@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbCxQku62m7ysk_JwAA3B_2">Act today &amp; improve Sales on Excess Inventory</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>The Fulfillment by Amazon team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 10:07:03 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+This title will display on mobile devices
+ Optional preview text
+ Hello,
+We noticed you have a number of ASIN(s) that have excess levels of inventory. We are reaching out to inform you about multiple options to improve your Unit Sales on your aged and/or excess inventory in Amazon Fulfillment Centers. Our goal is to help you increase the sales on this excess inventory:
+X004RR0607
+We encourage you to take Amazon recommended actions such as Create Outlet deals, Sponsor Products Ad, to improve sell through of this excess inventory and potentially reduce your chances of incurring aged inventory fee.
+ Outlet deals
+ Amazon Outlet is a great place for customers to shop for overstock deals, which offers a selection of items, such as electronics, toys, beauty, and kitchen.
+ Create Outlet Deal Today!
+ Sponsored Product Ads
+ Sponsored Products is a cost-per-click advertising solution that provides advertisers with a foundation of controls and visibility to help get their individual products discovered, and help generate sales from traffic sources in the Amazon store and on select premium apps and websites.
+ Create Sponsored Products Ad Today!
+We encourage you to view and execute ASIN level</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="act today &amp; improve sales on excess inventory the fulfillment by amazon team &lt;donotreply@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiNQEcBmm7yoGVYAAA3C_3">Act today &amp; improve Sales on Excess Inventory</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>The Fulfillment by Amazon team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 10:05:49 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:25</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+This title will display on mobile devices
+ Optional preview text
+ Hello,
+We noticed you have a number of ASIN(s) that have excess levels of inventory. We are reaching out to inform you about multiple options to improve your Unit Sales on your aged and/or excess inventory in Amazon Fulfillment Centers. Our goal is to help you increase the sales on this excess inventory:
+X004NUDN7B
+We encourage you to take Amazon recommended actions such as Create Outlet deals, Sponsor Products Ad, to improve sell through of this excess inventory and potentially reduce your chances of incurring aged inventory fee.
+ Outlet deals
+ Amazon Outlet is a great place for customers to shop for overstock deals, which offers a selection of items, such as electronics, toys, beauty, and kitchen.
+ Create Outlet Deal Today!
+ Sponsored Product Ads
+ Sponsored Products is a cost-per-click advertising solution that provides advertisers with a foundation of controls and visibility to help get their individual products discovered, and help generate sales from traffic sources in the Amazon store and on select premium apps and websites.
+ Create Sponsored Products Ad Today!
+We encourage you to view and execute ASIN level</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="seller news: march 2026 amazon europe &lt;donotreply@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbC7hzfnWm7vZxA7gAA3t_4">Seller News: March 2026</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>Amazon Europe &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 09:10:49 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Amazon Services
+ 96
+ Stay informed about selling on Amazon.
+ Our Seller Newsletter provides the most important policy, tool and programme updates from the past month.
+ Introducing a new, AI-powered workspace
+ You now have access to a dynamic canvas experience in Seller Central, where you can visualise data and key insights, explore scenarios and take critical actions to grow your business. This integrated, AI-native workspace combines chat and visual elements to provide highly personalised and actionable insights. Read more .
+ Upload Images now provides faster uploads and more flexibility
+ We’ve enhanced the image upload process in Upload Images to make managing images for your product catalogue faster and more flexible. Read more .
+ Save and track product research with Product Opportunity Explorer
+ Product Opportunity Explorer now includes a feature that helps you save and organise your research. You can identify profitable opportunities with low competition and save those promising product niches and ASINs with a single click. Read more .
+ Account health tips for multiple selling accounts
+ Our multiple-accounts policy allows you to operate one account per region unless you have a</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="seller news: march 2026 amazon europe &lt;donotreply@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIgGokmm7vMGNpQAA3e_5">Seller News: March 2026</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>Amazon Europe &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 09:07:09 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:25</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Amazon Services
+ 96
+ Stay informed about selling on Amazon.
+ Our Seller Newsletter provides the most important policy, tool and programme updates from the past month.
+ Introducing a new, AI-powered workspace
+ You now have access to a dynamic canvas experience in Seller Central, where you can visualise data and key insights, explore scenarios and take critical actions to grow your business. This integrated, AI-native workspace combines chat and visual elements to provide highly personalised and actionable insights. Read more .
+ Upload Images now provides faster uploads and more flexibility
+ We’ve enhanced the image upload process in Upload Images to make managing images for your product catalogue faster and more flexible. Read more .
+ Save and track product research with Product Opportunity Explorer
+ Product Opportunity Explorer now includes a feature that helps you save and organise your research. You can identify profitable opportunities with low competition and save those promising product niches and ASINs with a single click. Read more .
+ Account health tips for multiple selling accounts
+ Our multiple-accounts policy allows you to operate one account per region unless you have a</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="seller news: march 2026 amazon europe &lt;donotreply@amazon.com&gt;  account_4">
+                    <div class="mail-title" id="mail___account_4_xtbBpBJcQmm7u5LH_wAA3v_6">Seller News: March 2026</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_4</span>
+                        <span><b>发件人：</b>Amazon Europe &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 09:02:06 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Amazon Services
+ 96
+ Stay informed about selling on Amazon.
+ Our Seller Newsletter provides the most important policy, tool and programme updates from the past month.
+ Introducing a new, AI-powered workspace
+ You now have access to a dynamic canvas experience in Seller Central, where you can visualise data and key insights, explore scenarios and take critical actions to grow your business. This integrated, AI-native workspace combines chat and visual elements to provide highly personalised and actionable insights. Read more .
+ Upload Images now provides faster uploads and more flexibility
+ We’ve enhanced the image upload process in Upload Images to make managing images for your product catalogue faster and more flexible. Read more .
+ Save and track product research with Product Opportunity Explorer
+ Product Opportunity Explorer now includes a feature that helps you save and organise your research. You can identify profitable opportunities with low competition and save those promising product niches and ASINs with a single click. Read more .
+ Account health tips for multiple selling accounts
+ Our multiple-accounts policy allows you to operate one account per region unless you have a</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="reduce returns &amp; boost customer satisfaction - enrol in amazon
+ product support amazon product support team &lt;donotreply@amazon.com&gt;  account_3">
+                    <div class="mail-title" id="mail___account_3_xtbCxhhvLWm7n-gSUQAA3q_7">Reduce Returns &amp; Boost Customer Satisfaction - Enrol in Amazon
+ Product Support</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_3</span>
+                        <span><b>发件人：</b>Amazon Product Support team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 07:04:20 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:23</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+ Enrol now into Amazon Product Support !
+ Hello,
+ Greetings from Amazon Product Support.
+ Every product returned costs time, money, and customer trust. That’s why Amazon offers Product Support, a suite of post-purchase solutions that help customers solve problems quickly and keep products in use. In 2025, approximately 50% of customers who engaged with Product Support did not return their product. *
+ Enroll now and learn more about Amazon Product Support
+ Here’s how you can reduce returns and help customers:
+ • Manufacturer Support - A customer has a question about your product? They can contact your experts directly. In 2025, approximately 64% of customers who contacted support through Manufacturer Support did not return their product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Belgium, Sweden, Poland, and the Netherlands.
+ • Brand Integration - Call &amp; Chat - A customer runs into a setup issue and wants instant help? Provide live calls or chat support. In 2025, approximately 58% of customers who contacted support through Brand Integration - Call &amp; Chat did not return the product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Be</pre>
+                    </details>
+                </div>
+                
+                <div class="mail-card searchable-card" data-search="reduce returns &amp; boost customer satisfaction - enrol in amazon
+ product support amazon product support team &lt;donotreply@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIQE5I2m7nyEXpAAA3l_8">Reduce Returns &amp; Boost Customer Satisfaction - Enrol in Amazon
+ Product Support</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>Amazon Product Support team &lt;donotreply@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 07:00:47 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:24</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>96
+ Enrol now into Amazon Product Support !
+ Hello,
+ Greetings from Amazon Product Support.
+ Every product returned costs time, money, and customer trust. That’s why Amazon offers Product Support, a suite of post-purchase solutions that help customers solve problems quickly and keep products in use. In 2025, approximately 50% of customers who engaged with Product Support did not return their product. *
+ Enroll now and learn more about Amazon Product Support
+ Here’s how you can reduce returns and help customers:
+ • Manufacturer Support - A customer has a question about your product? They can contact your experts directly. In 2025, approximately 64% of customers who contacted support through Manufacturer Support did not return their product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Belgium, Sweden, Poland, and the Netherlands.
+ • Brand Integration - Call &amp; Chat - A customer runs into a setup issue and wants instant help? Provide live calls or chat support. In 2025, approximately 58% of customers who contacted support through Brand Integration - Call &amp; Chat did not return the product. * Available in the U.S., Canada, U.K., Germany, France, Italy, Spain, Be</pre>
+                    </details>
+                </div>
+                
+                    </div>
+                </details>
+            </div>
+            
+            <div class="category-block time-panel" data-mode="all">
+                <div class="category-header">
+                    <div class="category-name">货件/库存类</div>
+                    <div class="category-count">共 1 封</div>
+                </div>
+                <details class="category-details">
+                    <summary>展开/收起</summary>
+                    <div class="category-body">
+                        
+                <div class="mail-card searchable-card" data-search="important: serial numbers required for certain items transparency &lt;transparency1@amazon.com&gt;  account_5">
+                    <div class="mail-title" id="mail___account_5_1tbiIh3Ermm7sT1oagAA3J_1">Important: Serial numbers required for certain items</div>
+                    <div class="mail-meta">
+                        <span><b>时间分组：</b>today</span>
+                        <span><b>邮箱：</b>account_5</span>
+                        <span><b>发件人：</b>Transparency &lt;transparency1@amazon.com&gt;</span>
+                        <span><b>日期：</b>Thu, 19 Mar 2026 08:17:55 +0000</span>
+                        <span><b>命中词：</b></span>
+                        <span><b>抓取方式：</b>RETR</span>
+                        <span><b>检测时间：</b>2026-03-19 18:07:25</span>
+                    </div>
+                    <details>
+                        <summary>展开查看邮件预览</summary>
+                        <pre>Hello from Amazon Seller Services,
+The products listed below have been enrolled in the Transparency program by the brand owner. This means that the product is manufactured with a serial number. The serial number can be either a 2D Transparency branded barcode (these are 26 characters long and include a &quot;T&quot; logo) or a 1D or 2D serial number barcode (these are between 7 and 20 characters long and may include the pre-fix &quot;SN&quot;).
+To ensure product authenticity for your customers, we will require that these products have a Transparency barcode or serial number barcode affixed to the outer packaging of each individual unit of the product in order to be accepted by Amazon.
+Below is the list of ASINs that will require a Transparency barcode or serial number barcode from the manufacturer or brand.
+ASIN
+Title
+Target Inbound Date
+B0GCDSCPN1
+MagnetischeBausteine
+4/14/2026
+Amazon scans these barcode labels to verify the authenticity of the products. Your customers also can scan your Transparency barcode with the Transparency mobile app to confirm the item is not a counterfeit.
+Please contact the respective Brand or your distributor on any further information on the availability of the products w</pre>
+                    </details>
+                </div>
+                
+                    </div>
+                </details>
+            </div>
+            
+    </div>
+
+    <script>
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const timePanels = document.querySelectorAll('.time-panel');
+        const searchInput = document.getElementById('searchInput');
+
+        function switchMode(mode) {
+            tabButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            timePanels.forEach(panel => {
+                panel.classList.toggle('hidden', panel.dataset.mode !== mode);
+            });
+            applySearch();
+        }
+
+        function applySearch() {
+            const kw = (searchInput.value || '').trim().toLowerCase();
+            const visiblePanels = document.querySelectorAll('.time-panel:not(.hidden) .searchable-card');
+
+            document.querySelectorAll('.searchable-card').forEach(card => {
+                card.classList.remove('hidden');
+            });
+
+            if (!kw) return;
+
+            visiblePanels.forEach(card => {
+                const hay = card.dataset.search || '';
+                if (!hay.includes(kw)) {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+        });
+
+        searchInput.addEventListener('input', applySearch);
+
+        switchMode('today');
+    </script>
+</body>
+</html>
