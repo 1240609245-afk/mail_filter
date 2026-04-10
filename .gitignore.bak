@@ -1,0 +1,7 @@
+important_mails_*.html
+important_mails_*.json
+important_mails_*.csv
+important_mails_*.xlsx
+important_mails_history.json
+task_log.txt
+task_run_log.txt
